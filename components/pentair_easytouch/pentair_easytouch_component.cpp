@@ -8,16 +8,6 @@ namespace esphome
     {
         static const char *TAG = "pentair_easytouch.component";
 
-        void Demo_Task(void *arg)
-        {
-            PentairEasyTouchComponent *easytouch = (PentairEasyTouchComponent *)arg;
-            while (1)
-            {
-                ESP_LOGV(TAG, "Demo_Task: %d", easytouch->available());
-                vTaskDelay(1000 / portTICK_RATE_MS);
-            }
-        }
-
         void PentairEasyTouchComponent::setup()
         {
             if (this->flow_control_pin_ != nullptr)
@@ -25,7 +15,48 @@ namespace esphome
                 this->flow_control_pin_->setup();
                 this->flow_control_pin_->digital_write(0);
             }
-            // xTaskCreate(Demo_Task, "Demo_Task", 4096, NULL, 10, NULL);
+        }
+
+        uint8_t PentairEasyTouchComponent::calculate_checksum(uint8_t *packet, size_t length)
+        {
+            uint8_t checksum = 0;
+            for (size_t i = 0; i < length; i++)
+            {
+                checksum += packet[i];
+            }
+            return checksum;
+        }
+
+        void PentairEasyTouchComponent::send_control_packet(uint8_t dest_addr, uint8_t command, bool state)
+        {
+            if (this->flow_control_pin_ != nullptr)
+            {
+                this->flow_control_pin_->digital_write(1); // Enable RS485 transmitter
+            }
+
+            uint8_t state_byte = state ? 0x01 : 0x00;
+            uint8_t packet[] = {
+                0xFF,       // Start of packet
+                0x00,       // Start of packet
+                0xA5,       // Start of packet
+                0x10,       // Controller command
+                dest_addr,  // Destination address
+                CONTROLLER, // Source address (controller)
+                command,    // Command
+                0x02,       // Length
+                state_byte, // State
+                0x00        // Placeholder for checksum
+            };
+
+            packet[9] = calculate_checksum(packet, 9);
+
+            this->write_array(packet, sizeof(packet));
+            this->flush();
+
+            if (this->flow_control_pin_ != nullptr)
+            {
+                this->flow_control_pin_->digital_write(0); // Disable RS485 transmitter
+            }
         }
 
         void PentairEasyTouchComponent::update()
@@ -101,11 +132,6 @@ namespace esphome
             LOG_SENSOR(TAG, "Air Temp: ", this->air_temperature_sensor_);
         }
 
-        void PentairEasyTouchComponent::write_binary(bool state)
-        {
-            this->write_str(ONOFF(state));
-        }
-
         void UARTSwitch::dump_config()
         {
             LOG_SWITCH("", "UART Switch", this);
@@ -114,9 +140,8 @@ namespace esphome
         void UARTSwitch::write_state(bool state)
         {
             ESP_LOGV(TAG, "UARTSwitch::write_state(%d) Address=%02x", state, this->address_);
-            this->parent_->write_binary(state);
+            this->parent_->send_control_packet(this->address_, 0x86, state); // 0x86 is circuit on/off command
             this->publish_state(state);
         }
-
     } // pentair_easytouch
 } // esphome

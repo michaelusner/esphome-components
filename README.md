@@ -7,6 +7,27 @@ This custom component provides an interface to a Pentair Easytouch controller vi
 ### Hardware
 TODO
 
+### Building
+#### Requirements
+  * Docker is required to build and flash this project
+  * Make is also required
+  * secrets.yaml
+    
+    Define the following secrets in your secrets.yaml file:
+```yaml
+wifi_ssid: "your wifi ssid"
+wifi_password: "your wifi passsword"
+esphome_ota_password: "your ota password"
+```
+
+  Note that I build this project using WSL2 and have had no issues.  YMMV.
+
+### Installing
+1. Install ESPHome on your device
+   https://web.esphome.io/
+2. Note the device's IP address and add to the Makefile
+3. Run ```make flash```
+
 ### Usage
 Include the following in your yaml file:
 ```yaml

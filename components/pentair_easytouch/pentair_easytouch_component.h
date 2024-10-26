@@ -89,7 +89,11 @@ namespace esphome
             void set_air_temperature_sensor(sensor::Sensor *sensor) { air_temperature_sensor_ = sensor; }
             void set_water_temperature_sensor(sensor::Sensor *sensor) { water_temperature_sensor_ = sensor; }
             void set_flow_control_pin(GPIOPin *flow_control_pin) { this->flow_control_pin_ = flow_control_pin; }
-            void write_binary(bool value);
+
+            // Add these new functions
+            void send_control_packet(uint8_t dest_addr, uint8_t command, bool state);
+            uint8_t calculate_checksum(uint8_t *packet, size_t length);
+
             uint8_t buffer[BUFFER_SIZE];
             uint8_t *p_buffer = buffer;
             int bytes_read = 0;
@@ -97,12 +101,10 @@ namespace esphome
             PacketHeader packet_header;
             BroadcastPacket broadcast_packet;
             GPIOPin *flow_control_pin_{nullptr};
-            static void read_uart(void *param);
 
         protected:
             sensor::Sensor *air_temperature_sensor_{nullptr};
             sensor::Sensor *water_temperature_sensor_{nullptr};
-
             uint8_t ch, last = 0x00;
         };
 

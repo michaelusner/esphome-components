@@ -1,0 +1,63 @@
+# Basic ESPHome configuration
+esphome:
+  name: pentair_easytouch
+  friendly_name: Pentair EasyTouch
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+  level: DEBUG
+  baud_rate: 0  # Disable UART logging
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "CuNnERafVbVhubuBvQoFNBXD1+B6SbHrfgnjQb+2EN0="
+
+# OTA configuration
+ota:
+  - platform: esphome
+    password: !secret esphome_ota_password
+
+# WiFi credentials
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Pentair EasyTouch"
+    password: "partytime"
+
+# Your external component configuration
+external_components:
+  - source:
+      type: local
+      path: components
+
+
+# Define UART for component
+uart:
+  id: uart_1
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  baud_rate: 9600
+
+# Pentair EasyTouch component configuration
+pentair_easytouch:
+  id: pentair_easytouch_component_1
+  uart_id: uart_1
+  flow_control_pin: GPIO4
+  air_temperature_sensor:
+    name: Air Temperature
+    unit_of_measurement: °F
+  water_temperature_sensor:
+    name: Water Temperature
+    unit_of_measurement: °F
+  pump1_switch:
+    name: Pump 1
+    address: 0x60
