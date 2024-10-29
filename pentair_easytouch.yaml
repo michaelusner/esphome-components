@@ -52,12 +52,44 @@ pentair_easytouch:
   id: pentair_easytouch_component_1
   uart_id: uart_1
   flow_control_pin: GPIO4
+  
+  # Temperature sensors
   air_temperature_sensor:
     name: Air Temperature
     unit_of_measurement: °F
   water_temperature_sensor:
     name: Water Temperature
     unit_of_measurement: °F
-  pump1_switch:
-    name: Pump 1
-    address: 0x60
+    
+  # Pool features defined as individual switches
+  pool_switch:
+    name: Pool
+    feature: pool
+      
+  spa_switch:
+    name: Spa
+    feature: spa
+      
+  pool_light_switch:
+    name: Pool Light
+    feature: pool_light
+      
+  spa_light_switch:
+    name: Spa Light
+    feature: spa_light
+      
+  air_blower_switch:
+    name: Air Blower
+    feature: air_blower
+      
+  water_feature_switch:
+    name: Water Feature
+    feature: water_feature
+      
+  cleaner_switch:
+    name: Cleaner
+    feature: cleaner
+      
+  spillway_switch:
+    name: Spillway
+    feature: spillway
